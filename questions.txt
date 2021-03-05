@@ -1,0 +1,55 @@
+Watch the updated explanation here https://youtu.be/FKdZ0QEIga8?t=295
+Start at 4:55 for the indepth explanation of Dirty Cow
+
+This assignment is similar to the lab but it goes much more in-depth into 
+the interweaving of the function calls that occur during the Dirty Cow exploit.
+
+First thing to note. Write is NOT atomic, meaning that it's actually made up of
+many calls. What actually happens? When you call write to a /proc/mem/file in 
+reality it traps into the kernel and follows a call stack below (roughly).
+
+---------- USER SPACE ----------
+write(...)
+--------- KERNEL SPACE ---------
+    mem_write
+        access_remote_vm 
+            __get_user_pages
+                faultin_page
+                    handle_mm_fault
+
+This isn't exact and in reality the full call stack is much more complicated,
+so I've merged the functionality of some of the kernel functions for simplicity.
+
+Explore and trace the call stack from the write call User.py
+
+Question 1:
+    What is the exact ordering of the write function calls and madvise that
+    result in dirty COW? 
+    ---------- USER SPACE ----------
+    write(...)
+    --------- KERNEL SPACE ---------
+        0
+        mem_write
+            1
+            access_remote_vm 
+                2
+                __get_user_pages
+                    3
+                    faultin_page
+                        4
+                        handle_mm_fault
+                            5
+    ANSWER: [Put a number here 0-5]
+
+Question 2:
+    Since our file is marked as read_only and mapped into read only memory, how
+    is it that 
+
+Question 3:
+    Instead of relying on randomness we manually schedule the execution flow 
+    in the Kernel (this isn't really how it happens this is just a demonstration)
+
+    Fill in the TODO in the OS Scheduler and run User.py
+
+    ANSWER: [Paste your stack trace here]
+
