@@ -9,8 +9,9 @@ class UserSpace:
     
     def __init__(self):
         self.kernel = Kernel()
+        self.kernel.memory.mmap("read_only.txt", Flags.READ_ONLY, Flags.MAP_PRIVATE)
 
-    def write(self, file_descriptor, input, length, file='/proc/self/mem'):
+    def write(self):
         '''
         Write is a non-atomic operation meaning that it takes *multiple* steps
         to complete. 
@@ -41,14 +42,12 @@ class UserSpace:
         https://man7.org/linux/man-pages/man5/procfs.5.html
 
         '''
-        pass
+        self.kernel.mem_write("MOOOOOOOOOOOOOOOOOOOOOOOO", 0)
 
 if __name__ == '__main__':
-    m = Memory()
-    m.mmap("read_only.txt", Flags.READ_ONLY, Flags.PRIVATE)
-    m.peek()
-    print()
-    m.memory[0].dirty = True
-    m.memory[0].data = "test"
-    m.sync()
-    m.peek()
+    u = UserSpace()
+    print("======BEFORE======")
+    u.kernel.memory.peek()
+    u.write()
+    print("======AFTER======")
+    u.kernel.memory.peek()

@@ -48,8 +48,15 @@ Question 2:
     mmap flags
 
     EXPLANATION: [1 or 2 sentences]
-
+    
 Question 3:
+    Run User.py and paste the console output below.
+    Negative addresses means that page was copied on write
+    
+    ANSWER: [Yes/No was any of the original memory overwritten?]
+    OUTPUT: [Output from User.py]
+
+Question 4:
     *write* is non-atomic meaning it takes multiple steps.
 
     The following is a snippet of what write actually looks like behind the
@@ -73,7 +80,14 @@ Question 3:
     rely on randomness. 
     
     Modify the scheduler function in Kernel.py so that dirtyc0w exploit works.
+    Run User.py after setting EXECUTE in Kernel.py and observe read_only.txt
     
     When does madvise have to execute? 
-    ANSWER: [Put the function name that madvise executes in the middle of]
+    ANSWER: [Just put the number you put for EXECUTE = x]
+
+    OUTPUT 1: [Paste read_only.txt]
+
+    OUTPUT 2: [Paste the console output]
+
+    WHY: [Why does madvise cause a write to the actual file?]
 
