@@ -1,55 +1,79 @@
+The functions in this assignment are meant to replicate the kernel operations
+that execute during dirty cow exploit, however it is not a *complete* replication.
+
+I have shortened and combined many kernel functions because only part of the 
+execution is relevent to the dirty cow exploit, as such this is not a fully
+accurate picture of what happens in the kernel. Instead what I aimed to do is
+"follow" the general logic and concepts and turn it into a interactive toy-kernel
+that you can play with.
+
 Watch the updated explanation here https://youtu.be/FKdZ0QEIga8?t=295
 Start at 4:55 for the indepth explanation of Dirty Cow
 
-This assignment is similar to the lab but it goes much more in-depth into 
-the interweaving of the function calls that occur during the Dirty Cow exploit.
+The full detailed write up is here https://chao-tic.github.io/blog/2017/05/24/dirty-cow
 
-First thing to note. Write is NOT atomic, meaning that it's actually made up of
-many calls. What actually happens? When you call write to a /proc/mem/file in 
-reality it traps into the kernel and follows a call stack below (roughly).
-
----------- USER SPACE ----------
-write(...)
---------- KERNEL SPACE ---------
-    mem_write
-        access_remote_vm 
-            __get_user_pages
-                faultin_page
-                    handle_mm_fault
-
-This isn't exact and in reality the full call stack is much more complicated,
-so I've merged the functionality of some of the kernel functions for simplicity.
-
-Explore and trace the call stack from the write call User.py
+NOTE: You will notice discrepancies between the sources linked above and my 
+simulated kernel code, please refer to the actual code in Kernel.py and not just
+the video/write up. The concepts and exploit logic should translate well.
 
 Question 1:
-    What is the exact ordering of the write function calls and madvise that
-    result in dirty COW? 
+    Explore the flow of the real dirtycow exploit in real_dirtyc0w.c.
+
+    Line 83:
+        map=mmap(NULL,st.st_size,PROT_READ,MAP_PRIVATE,f,0);
+
+    Why must the PROT_READ and MAP_PRIVATE flags be set for this exploit to work?
+
+    Hint:
+    https://man7.org/linux/man-pages/man2/mmap.2.html
+    Remember the file being read in is read only!
+        
+    EXPLANATION: [1 or 2 sentences for PROT_READ and MAP_PRIVATE]
+
+Question 2:
+    Line 43:
+        int f=open("/proc/self/mem",O_RDWR);
+
+    Line 49:
+        lseek(f,(uintptr_t) map,SEEK_SET);
+        c+=write(f,str,strlen(str));
+
+    The flag O_RDWR is set, however the file we've mapped into memory is read
+    only protected. Why do we not get a permission error when we try to write
+    to that read only region in memory?
+
+    
+    Hint:
+    https://man7.org/linux/man-pages/man2/open.2.html
+    mmap flags
+
+    EXPLANATION: [1 or 2 sentences]
+
+Question 3:
+    *write* is non-atomic meaning it takes multiple steps.
+
+    The following is a snippet of what write actually looks like behind the
+    scenes:
+
     ---------- USER SPACE ----------
     write(...)
     --------- KERNEL SPACE ---------
-        0
-        mem_write
-            1
-            access_remote_vm 
-                2
-                __get_user_pages
-                    3
-                    faultin_page
-                        4
-                        handle_mm_fault
-                            5
-    ANSWER: [Put a number here 0-5]
+        mem_write(...)
+            access_remote_vm(...)
+                __get_user_pages(...)
+                    faultin_page(...)
+                        handle_mm_fault(...)
 
-Question 2:
-    Since our file is marked as read_only and mapped into read only memory, how
-    is it that 
+    The real dirty cow exploit relies on racing two threads that execute write
+    and madvise many many times! The goal of this is to cause
+    write and madvise to execute in a *specific* order to cause a write to the
+    read protected file.
 
-Question 3:
-    Instead of relying on randomness we manually schedule the execution flow 
-    in the Kernel (this isn't really how it happens this is just a demonstration)
-
-    Fill in the TODO in the OS Scheduler and run User.py
-
-    ANSWER: [Paste your stack trace here]
+    For this exercise you have direct access to Kernel.py so we do not need to 
+    rely on randomness. 
+    
+    Modify the scheduler function in Kernel.py so that dirtyc0w exploit works.
+    
+    When does madvise have to execute? 
+    ANSWER: [Put the function name that madvise executes in the middle of]
 
